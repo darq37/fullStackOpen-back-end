@@ -1,11 +1,20 @@
 const express = require('express')
 
 
+const requestLogger = (request, response, next) => {
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    next()
+}
 const app = express()
+
 const PORT = 3002;
 
 const generateId = () => {
-    return notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0;
+    const maxId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0;//spreading the array into individual numbers
+    return maxId + 1;
 }
 
 let notes = [
@@ -28,9 +37,9 @@ let notes = [
         important: true
     }
 ]
-
 app.use(express.json()) // for parsing request body
 
+app.use(requestLogger) // for parsing request body
 app.get('/api/notes', ((request, response) => {
     response.json(notes)
 }))
@@ -43,6 +52,7 @@ app.get('/api/notes/:id', ((request, response) => {
         response.status(404).end()
     }
 }))
+
 app.delete('/api/notes/:id', ((request, response) => {
     const id = Number(request.params.id)
 
@@ -60,10 +70,10 @@ app.post('/api/notes', ((req, res) => {
     }
 
     const note = {
+        id: generateId(),
         content: body.content,
-        important: body.important || false,
         date: new Date(),
-        id: generateId()
+        important: body.important || false
     }
 
     notes = notes.concat(note)
