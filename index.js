@@ -1,6 +1,5 @@
 const express = require('express')
-
-
+const cors = require('cors')
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method)
     console.log('Path:  ', request.path)
@@ -10,13 +9,11 @@ const requestLogger = (request, response, next) => {
 }
 const app = express()
 
-const PORT = 3002;
-
 const generateId = () => {
+
     const maxId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0;//spreading the array into individual numbers
     return maxId + 1;
 }
-
 let notes = [
     {
         id: 1,
@@ -37,12 +34,14 @@ let notes = [
         important: true
     }
 ]
-app.use(express.json()) // for parsing request body
 
+app.use(express.json()) // for parsing request body
 app.use(requestLogger) // for parsing request body
+app.use(cors())
 app.get('/api/notes', ((request, response) => {
     response.json(notes)
 }))
+
 app.get('/api/notes/:id', ((request, response) => {
     const id = Number(request.params.id)
     const note = notes.find(note => note.id === id)
@@ -52,7 +51,6 @@ app.get('/api/notes/:id', ((request, response) => {
         response.status(404).end()
     }
 }))
-
 app.delete('/api/notes/:id', ((request, response) => {
     const id = Number(request.params.id)
 
@@ -80,5 +78,17 @@ app.post('/api/notes', ((req, res) => {
     res.json(note)
 }))
 
+app.put('/api/notes/:id', (req, res) => {
+    const id = Number(req.params.id)
 
+    const note = notes.find(n => n.id === id)
+    note.important = note.important !== true;
+
+
+    res.status(205).json({
+        message: "Note's importance changed"
+    })
+})
+
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
