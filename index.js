@@ -41,6 +41,7 @@ app.use(cors())
 app.get('/api/notes', ((request, response) => {
     response.json(notes)
 }))
+app.use(express.static('build'))
 
 app.get('/api/notes/:id', ((request, response) => {
     const id = Number(request.params.id)
