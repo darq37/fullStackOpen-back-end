@@ -19,6 +19,7 @@ app.use(cors())
 app.use(express.static('build'))
 
 app.get('/api/notes', ((request, response) => {
+    console.log('works')
     Note.find({}).then(notes => response.json(notes))
 }))
 app.get('/api/notes/:id', ((request, response) => {
