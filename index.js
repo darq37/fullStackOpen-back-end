@@ -19,16 +19,12 @@ app.use(cors())
 app.use(express.static('build'))
 
 app.get('/api/notes', ((request, response) => {
-    console.log('works')
-    Note.find({}).then(notes => response.json(notes))
+    Note.find({}).then(notes => {
+        response.json(notes)
+    })
 }))
 app.get('/api/notes/:id', ((request, response) => {
     Note.findById(request.params.id).then(note => {
-        response.json(note)
-    })
-}))
-app.delete('/api/notes/:id', ((request, response) => {
-    Note.findOneAndDelete(request.params.id).then(note => {
         response.json(note)
     })
 }))
@@ -49,7 +45,6 @@ app.post('/api/notes', ((request, response) => {
         response.json(savedNote)
     })
 }))
-
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
 
