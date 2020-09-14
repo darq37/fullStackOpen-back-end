@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const mongoose = require('mongoose')
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method)
     console.log('Path:  ', request.path)
@@ -8,41 +9,39 @@ const requestLogger = (request, response, next) => {
     next()
 }
 const app = express()
-
 const generateId = () => {
 
     const maxId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0;//spreading the array into individual numbers
     return maxId + 1;
 }
-let notes = [
-    {
-        id: 1,
-        content: "HTML is easy",
-        date: "2019-05-30T17:30:31.098Z",
-        important: true
-    },
-    {
-        id: 2,
-        content: "Browser can execute only Javascript",
-        date: "2019-05-30T18:39:34.091Z",
-        important: false
-    },
-    {
-        id: 3,
-        content: "GET and POST are the most important methods of HTTP protocol",
-        date: "2019-05-30T19:20:14.298Z",
-        important: true
+const PORT = process.env.PORT || 3002;
+const url = `mongodb+srv://user:user@cluster0.0smgw.mongodb.net/note-app?retryWrites=true&w=majority`
+
+mongoose.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
+
+let noteSchema = new mongoose.Schema({
+    content: String,
+    date: Date,
+    important: Boolean
+})
+noteSchema.set('toJSON', {
+    transform: (document, returnedObject) => {
+        returnedObject.id = returnedObject._id.toString()
+        delete returnedObject._id
+        delete returnedObject.__v
     }
-]
+})
+const Note = mongoose.model('Note', noteSchema)
+let notes = []
 
 app.use(express.json()) // for parsing request body
 app.use(requestLogger) // for parsing request body
 app.use(cors())
-app.get('/api/notes', ((request, response) => {
-    response.json(notes)
-}))
 app.use(express.static('build'))
 
+app.get('/api/notes', ((request, response) => {
+    Note.find({}).then(notes => response.json(notes))
+}))
 app.get('/api/notes/:id', ((request, response) => {
     const id = Number(request.params.id)
     const note = notes.find(note => note.id === id)
@@ -59,7 +58,6 @@ app.delete('/api/notes/:id', ((request, response) => {
 
     response.status(204).end()
 }))
-
 app.post('/api/notes', ((req, res) => {
     const body = req.body;
     if (!body.content) {
@@ -90,6 +88,6 @@ app.put('/api/notes/:id', (req, res) => {
         message: "Note's importance changed"
     })
 })
-
-const PORT = process.env.PORT || 3002;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
+
+
