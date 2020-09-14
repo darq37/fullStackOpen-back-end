@@ -12,12 +12,6 @@ const requestLogger = (request, response, next) => {
     next()
 
 }
-const generateId = () => {
-    const maxId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0;//spreading the array into individual numbers
-    return maxId + 1;
-}
-
-let notes = []
 
 app.use(express.json()) // for parsing request body
 app.use(requestLogger) // for parsing request body
@@ -28,51 +22,33 @@ app.get('/api/notes', ((request, response) => {
     Note.find({}).then(notes => response.json(notes))
 }))
 app.get('/api/notes/:id', ((request, response) => {
-    const id = Number(request.params.id)
-    const note = notes.find(note => note.id === id)
-    if (note) {
+    Note.findById(request.params.id).then(note => {
         response.json(note)
-    } else {
-        response.status(404).end()
-    }
+    })
 }))
 app.delete('/api/notes/:id', ((request, response) => {
-    const id = Number(request.params.id)
-
-    notes = notes.filter(note => note.id !== id)
-
-    response.status(204).end()
-}))
-app.post('/api/notes', ((req, res) => {
-    const body = req.body;
-    if (!body.content) {
-        return res.status(400).json({
-            error: 'content missing'
-        })
-    }
-
-    const note = {
-        id: generateId(),
-        content: body.content,
-        date: new Date(),
-        important: body.important || false
-    }
-
-    notes = notes.concat(note)
-    res.json(note)
-}))
-
-app.put('/api/notes/:id', (req, res) => {
-    const id = Number(req.params.id)
-
-    const note = notes.find(n => n.id === id)
-    note.important = note.important !== true;
-
-
-    res.status(205).json({
-        message: "Note's importance changed"
+    Note.findOneAndDelete(request.params.id).then(note => {
+        response.json(note)
     })
-})
+}))
+app.post('/api/notes', ((request, response) => {
+    const body = request.body
+
+    if (body.content === undefined) {
+        return response.status(400).json({ error: 'content missing' })
+    }
+
+    const note = new Note({
+        content: body.content,
+        important: body.important || false,
+        date: new Date(),
+    })
+
+    note.save().then(savedNote => {
+        response.json(savedNote)
+    })
+}))
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 
 
