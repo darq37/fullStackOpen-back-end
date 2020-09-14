@@ -1,37 +1,22 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-const mongoose = require('mongoose')
+const app = express()
+const Note = require('./models/note')
+const PORT = process.env.PORT
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method)
     console.log('Path:  ', request.path)
     console.log('Body:  ', request.body)
     console.log('---')
     next()
-}
-const app = express()
-const generateId = () => {
 
+}
+const generateId = () => {
     const maxId = notes.length > 0 ? Math.max(...notes.map(n => n.id)) : 0;//spreading the array into individual numbers
     return maxId + 1;
 }
-const PORT = process.env.PORT || 3002;
-const url = `mongodb+srv://user:user@cluster0.0smgw.mongodb.net/note-app?retryWrites=true&w=majority`
 
-mongoose.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
-
-let noteSchema = new mongoose.Schema({
-    content: String,
-    date: Date,
-    important: Boolean
-})
-noteSchema.set('toJSON', {
-    transform: (document, returnedObject) => {
-        returnedObject.id = returnedObject._id.toString()
-        delete returnedObject._id
-        delete returnedObject.__v
-    }
-})
-const Note = mongoose.model('Note', noteSchema)
 let notes = []
 
 app.use(express.json()) // for parsing request body
