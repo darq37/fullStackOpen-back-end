@@ -7,13 +7,28 @@ const Note = require('../models/note')
 const api = supertest(app)
 
 beforeEach(async () => {
-    await Note.deleteMany({}) //clear the DB
+    await Note.deleteMany({})
+    console.log("Database cleared")
 
-    let noteObject = new Note(helper.initialNotes[0])
-    await noteObject.save()
+    for (const note of helper.initialNotes) {
+        let noteObject = new Note(note)
+        await noteObject.save()
+        console.log('New notes saved')
+    }
+    console.log('Pre-test initialization done.')
+    /*
+     await Note.deleteMany({})
 
-    noteObject = new Note(helper.initialNotes[1])
-    await noteObject.save()
+     const noteObjects = helper.initialNotes
+            .map(note => new Note(note))
+     const promiseArray = noteObjects.map(note => note.save())
+     await Promise.all(promiseArray)
+
+     <This way, its possible to execute all promises in pararel, instead
+     of particular order  as in for..of loop>
+  * */
+
+
 })
 
 test('should return notes as json', async () => {
