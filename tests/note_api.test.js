@@ -127,6 +127,7 @@ describe('addition of a new note', function () {
 
     })
 });
+
 describe('there is an user in db', function () {
     beforeEach(async () => {
         await User.deleteMany({})
@@ -179,10 +180,6 @@ describe('there is an user in db', function () {
     })
 
 });
-
-
-
-
 
 afterAll(() => {
     mongoose.connection.close()
